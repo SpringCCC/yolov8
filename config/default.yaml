@@ -1,0 +1,8 @@
+
+epochs: 300
+stop_mosaic_epoch: 290
+mosaic: True
+mosaic_prob: 0.5
+mixup: True
+mixup_prob: 0.5
+max_buffer_num: 2000

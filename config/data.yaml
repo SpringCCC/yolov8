@@ -1,0 +1,27 @@
+train: config/sc_train_all_2024830_filter3_223.txt  # train images (relative to 'path') 118287 images
+# train: /home/joyao/images
+val: config/sc_val_2024830_filter3_223.txt  # val images (relative to 'path') 5000 images
+test:  # 20288 of 40670 images, submit to https://competitions.codalab.org/competitions/20794
+
+names:
+  0: 'person'
+  1: 'bicycle'
+  2: 'car'
+  3: 'motorcycle'
+  4: 'fire engine'
+  5: 'bus'
+  6: 'train'
+  7: 'truck'
+  8: 'ambulance'
+  9: 'traffic light'
+  10: 'fire'
+  11: 'smoke'
+  12: 'stop sign'
+  13: 'spill'
+  14: 'umbrella'
+  15: 'handbag'
+  16: 'plate'
+  17: 'suitcase'
+  18: 'chair'
+  19: 'face'
+ 
