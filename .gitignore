@@ -16,7 +16,8 @@ run
 runs
 log
 logs
-
+*.npy
+*.txt
 
 # 常用
 __pycache__/
