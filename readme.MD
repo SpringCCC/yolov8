@@ -12,3 +12,11 @@ txt文件中每一行代表一个目标
 
 训练时，给定一个txt文件，txt文件每一行代表一个jpg_file,替换掉后缀名为txt后，为txt路径
 input_shape: (h, w)
+
+#训练图像处理流程
+- opencv读取图像
+- 扭曲/水平反转图像
+- HSV色域变换
+- mosaic数据增强
+- bgr转rgb， 归一化到0-1
+- 

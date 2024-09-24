@@ -3,6 +3,18 @@ from springc_utils import *
 from collections import deque
 from data.convert import *
 
+
+def dataset_collate(batch):
+    images  = []
+    bboxes  = []
+    for i, (img, box) in enumerate(batch):
+        images.append(img)
+        box[:, 0] = i
+        bboxes.append(box)
+    images  = torch.from_numpy(np.array(images)).type(torch.FloatTensor)
+    bboxes  = torch.from_numpy(np.concatenate(bboxes, 0)).type(torch.FloatTensor)
+    return images, bboxes
+
 class YOLODataset(Dataset):
 
     def __init__(self, img_info, config_yaml, class_name, imgsz, box_format='xywh') -> None:
@@ -23,22 +35,33 @@ class YOLODataset(Dataset):
         self.hsv = RandomHSV()
         self.mosaic = Mosaic()
         
-
+    def preprocess_input(self, image):
+        image = image[:, :, ::-1]
+        image /= 255.0
+        return image
 
 
     def __getitem__(self, i):
-        img_path, box = self.load_image(i)
+        img, box = self.load_image(i)
         if self.epoch_now < self.stop_mosaic_epoch and self.config.mosaic_prob>0:
             selected_ids = random.choice(self.buffer_idx, k=3)
             selected_ids.append(i)
             infos = []
             for j in selected_ids:
                 infos.append([self.img_buffer[j], self.box_buffer[j]])
-            img_path, box = self.mosaic(infos, self.imgsz)
-
-            pass
+            img, box = self.mosaic(infos, self.imgsz)
         if self.epoch_now < self.stop_mosaic_epoch and self.config.mixup_prob>0:
             pass
+        img = np.transpose(self.preprocess_input(np.array(img, dtype=np.float32)), (2, 0, 1))
+        box = np.array(box, dtype=np.float32)
+        n, c = box.shape
+        labels_out  = np.zeros((n, c+1))
+        if n:
+            labels_out[:, 1:] = box # 首位的索引，用来后面标记这是第几个图像索引 img_cnt, x1, y1, x2, y2, cls, (angle，如果有的话)
+        return img, labels_out
+        
+        
+        
 
     def load_image(self, i):
         img_path, box = self.imgs_path[i], self.boxs[i]
@@ -52,11 +75,8 @@ class YOLODataset(Dataset):
             self.img_buffer[j], self.label_buffer[j], self.box_buffer[j] = None, None, None
         self.buffer_idx.append(i)
         self.img_buffer[i], self.box_buffer[i] = img, box
-        return img_path, box
+        return img, box
             
-
-
-
 
 
     def __len__(self):
