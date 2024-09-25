@@ -1,7 +1,7 @@
 from torch.utils.data.dataset import Dataset
 from springc_utils import *
 from collections import deque
-from data.convert import *
+from data.data_augment import *
 
 
 def dataset_collate(batch):
@@ -17,18 +17,20 @@ def dataset_collate(batch):
 
 class YOLODataset(Dataset):
 
-    def __init__(self, img_info, config_yaml, class_name, imgsz, box_format='xywh') -> None:
+    def __init__(self, img_info, config_yaml, class_name, imgsz) -> None:
         self.imgsz = imgsz
         self.imgs_path = img_info['img_info']
-        self.boxs = img_info['boxs'] # (N, 5) 5: x1, y1, x2, y2, cls ,如果不符合格式，在输入YOLODataset之前处理
+        #   boxs  
+        #     (N, 5) 5: x1, y1, x2, y2, cls ,如果不符合格式，在输入YOLODataset之前处理/  
+        #     (N, 6) 5: x1, y1, x2, y2, cls, angle 这里跟我做的一个项目有关，需要预测车辆角度，相当于多了一个属性
+        self.boxs = img_info['boxs'] # 
         self.data_queue = []
-        self.config = type('TrainingConfig', (object,), config_yaml)
+        self.config = type('TrainingConfig', (object,), config_yaml) #把读取的yaml文件转成类，使用self.config.xxx 引用参数，避免每次使用字典方式引用
         self.n_class = len(class_name)
         self.class_name = class_name
-        self.epoch_now = -1
+        self.epoch_now = -1 #判断是否继续使用 mosaic/mixup 这类数据增强
         self.stop_mosaic_epoch = self.config.stop_mosaic_epoch
         self.n_imgs = len(self.imgs_path)
-        self.box_format = box_format
         self.img_buffer, self.box_buffer = [None] * self.n_imgs, [None] * self.n_imgs
         self.buffer_idx = deque()
         self.max_buffer_num = self.config.max_buffer_num

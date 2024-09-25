@@ -14,9 +14,16 @@ txt文件中每一行代表一个目标
 input_shape: (h, w)
 
 #训练图像处理流程
-- opencv读取图像
+- Image读取图像
 - 扭曲/水平反转图像
 - HSV色域变换
 - mosaic数据增强
-- bgr转rgb， 归一化到0-1
-- 
+- 归一化到0-1
+
+基本原则：
+所有图像都是rgb，从读取之后就是这样
+图像resize需要pad时，pad值默认为128
+
+模型的输出为y, x
+x是经过FPN+PAN之后的输出
+y是x经过解码后的输出 dbox, cls
